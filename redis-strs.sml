@@ -20,6 +20,13 @@ fun send_command command sock =
 	Byte.bytesToString server_response
     end
 
+(* Redis integer example: ":1451\r\n" *)
+fun parse_redis_int s = 
+    if String.isPrefix ":" s then
+	Int.fromString (substring (s, 1, size s - 2))
+    else 
+	NONE
+
 (* Redis commands *)
 
 fun get key sock = send_command ("GET " ^ key) sock
@@ -28,12 +35,14 @@ fun set key value sock= send_command ("SET " ^ key ^ " " ^ value) sock
 
 fun ping sock = send_command "PING" sock
 
+fun flushall sock = send_command "FLUSHALL" sock
+
 fun incr key sock = send_command ("INCR " ^ key) sock
 
 fun dbsize sock= 
     let
 	val response_string = send_command "DBSIZE" sock
-	val response_as_int = Int.fromString(response_string)
+	val response_as_int = parse_redis_int response_string
     in
 	if isSome response_as_int then
 	    valOf response_as_int
@@ -46,7 +55,7 @@ fun exists key sock =
     let
 	val response_string = send_command ("EXISTS " ^ key) sock
     in
-	if response_string = "0" then
+	if response_string = ":1\r\n" then
 	    true
 	else
 	    false
