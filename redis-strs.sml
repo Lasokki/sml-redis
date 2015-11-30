@@ -1,6 +1,8 @@
 structure Redis :> REDIS =
 struct
 
+exception RedisError of string
+
 (* Utility functions *)
 fun connect_db (host, port) =
     let
@@ -15,9 +17,13 @@ fun connect_db (host, port) =
 fun send_command command sock =
     let
 	val _ = Socket.sendVec(sock, VectorSlice.full(Byte.stringToBytes (command ^ "\n")))
-	val server_response = Socket.recvVec(sock, 1000)
+	val raw_response = Socket.recvVec(sock, 1000)
+	val response_string = Byte.bytesToString raw_response
     in
-	Byte.bytesToString server_response
+	if String.isPrefix "-" response_string then
+	    raise RedisError response_string
+	else
+	    response_string
     end
 
 (* Redis integer example: ":1451\r\n" *)
@@ -62,3 +68,4 @@ fun exists key sock =
     end
 
 end
+
