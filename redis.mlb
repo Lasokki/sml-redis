@@ -1,0 +1,10 @@
+local
+   (* import Basis Library *)
+   $(SML_LIB)/basis/basis.mlb
+   redis-sigs.sml
+   redis-strs.sml
+
+in
+   signature REDIS
+   structure Redis
+end
