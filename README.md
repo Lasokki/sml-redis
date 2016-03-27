@@ -12,4 +12,4 @@ redis.mlb
 your_own_code.sml
 ```
 
-and compiling with with `mlton whatever.mlb`. Some example files are provided in the repository (`testing.mlb` and `redis-testing.sml`)  
+and compiling with `mlton whatever.mlb`. Some example files are provided in the repository (`testing.mlb` and `redis-testing.sml`)  
