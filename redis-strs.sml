@@ -33,9 +33,26 @@ fun parse_redis_int s =
     else 
 	NONE
 
+(* Redis bulk string example: "$6\r\nfoobar\r\n" *)
+fun parse_redis_bulk_string s =
+    let
+	val ss = Substring.full s
+    in
+	if String.isPrefix "$" s then
+	    SOME (Substring.string (Substring.triml 4 (Substring.trimr 2 ss)))
+	else
+	    NONE
+    end
+
 (* Redis commands *)
 
-fun get sock key = send_command ("GET " ^ key) sock
+fun get sock key = 
+    let 
+	val response_string = send_command ("GET " ^ key) sock
+	val reponse_bulk_as_string = parse_redis_bulk_string response_string
+    in
+	valOf reponse_bulk_as_string
+    end
 
 fun set sock key value = send_command ("SET " ^ key ^ " " ^ value) sock
 
