@@ -36,10 +36,17 @@ fun parse_redis_int s =
 (* Redis bulk string example: "$6\r\nfoobar\r\n" *)
 fun parse_redis_bulk_string s =
     let
+	fun extract_string x = Substring.string (Substring.triml 4 (Substring.trimr 2 (Substring.full x)))
+	
 	val ss = Substring.full s
+	val splitted_by_carriage = Substring.splitl (fn a => if a = #"\015" then false else true) ss
+	val trimmed_string = Substring.string(Substring.triml 1 (#1 splitted_by_carriage))
+	val bulk_length = valOf (Int.fromString(trimmed_string))
+	val is_not_null_bulk_string = if bulk_length >= 0 then true else false
+
     in
-	if String.isPrefix "$" s then
-	    SOME (Substring.string (Substring.triml 4 (Substring.trimr 2 ss)))
+	if String.isPrefix "$" s andalso is_not_null_bulk_string then
+	    SOME (extract_string s)
 	else
 	    NONE
     end
@@ -49,9 +56,12 @@ fun parse_redis_bulk_string s =
 fun get sock key = 
     let 
 	val response_string = send_command ("GET " ^ key) sock
-	val reponse_bulk_as_string = parse_redis_bulk_string response_string
+	val response_bulk_as_string = parse_redis_bulk_string response_string
     in
-	valOf reponse_bulk_as_string
+	if isSome response_bulk_as_string then
+	    valOf response_bulk_as_string
+	else
+	    "NIL"
     end
 
 fun set sock key value = send_command ("SET " ^ key ^ " " ^ value) sock
