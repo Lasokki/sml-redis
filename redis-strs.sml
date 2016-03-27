@@ -55,6 +55,14 @@ fun parse_redis_bulk_string s =
 	    NONE
     end
 
+fun get_simple_string_response sock command = 
+    let 
+	val response_string = send_command command sock
+	val simple_string_as_string = parse_simple_string response_string
+    in
+	simple_string_as_string
+    end
+
 (* Redis commands *)
 
 fun get sock key = 
@@ -65,25 +73,13 @@ fun get sock key =
 	response_bulk_as_string
     end
 
-fun set sock key value = send_command ("SET " ^ key ^ " " ^ value) sock
+fun set sock key value = get_simple_string_response sock ("SET " ^ key ^ " " ^ value)
 
-fun ping sock = 
-    let 
-	val response_string = send_command "PING" sock
-	val simple_string_as_string = parse_simple_string response_string
-    in
-	simple_string_as_string
-    end
+fun ping sock = get_simple_string_response sock "PING"
 
-fun flushall sock = 
-    let 
-	val response_string = send_command "FLUSHALL" sock
-	val simple_string_as_string = parse_simple_string response_string
-    in
-	simple_string_as_string
-    end
+fun flushall sock = get_simple_string_response sock "FLUSHALL"
 
-fun incr sock key = send_command ("INCR " ^ key) sock
+fun incr sock key = get_simple_string_response sock ("INCR " ^ key)
 
 fun dbsize sock = 
     let
