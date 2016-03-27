@@ -58,10 +58,7 @@ fun get sock key =
 	val response_string = send_command ("GET " ^ key) sock
 	val response_bulk_as_string = parse_redis_bulk_string response_string
     in
-	if isSome response_bulk_as_string then
-	    valOf response_bulk_as_string
-	else
-	    "NIL"
+	response_bulk_as_string
     end
 
 fun set sock key value = send_command ("SET " ^ key ^ " " ^ value) sock
