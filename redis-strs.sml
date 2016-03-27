@@ -26,12 +26,16 @@ fun send_command command sock =
 	    response_string
     end
 
+fun remove_prefix_and_end_crlf s = substring (s, 1, size s - 2)
+
 (* Redis integer example: ":1451\r\n" *)
 fun parse_redis_int s = 
     if String.isPrefix ":" s then
-	Int.fromString (substring (s, 1, size s - 2))
+	Int.fromString (remove_prefix_and_end_crlf s)
     else 
 	NONE
+
+fun parse_simple_string s = remove_prefix_and_end_crlf s
 
 (* Redis bulk string example: "$6\r\nfoobar\r\n" *)
 fun parse_redis_bulk_string s =
@@ -63,9 +67,21 @@ fun get sock key =
 
 fun set sock key value = send_command ("SET " ^ key ^ " " ^ value) sock
 
-fun ping sock = send_command "PING" sock
+fun ping sock = 
+    let 
+	val response_string = send_command "PING" sock
+	val simple_string_as_string = parse_simple_string response_string
+    in
+	simple_string_as_string
+    end
 
-fun flushall sock = send_command "FLUSHALL" sock
+fun flushall sock = 
+    let 
+	val response_string = send_command "FLUSHALL" sock
+	val simple_string_as_string = parse_simple_string response_string
+    in
+	simple_string_as_string
+    end
 
 fun incr sock key = send_command ("INCR " ^ key) sock
 
