@@ -35,17 +35,17 @@ fun parse_redis_int s =
 
 (* Redis commands *)
 
-fun get key sock = send_command ("GET " ^ key) sock
+fun get sock key = send_command ("GET " ^ key) sock
 
-fun set key value sock= send_command ("SET " ^ key ^ " " ^ value) sock
+fun set sock key value = send_command ("SET " ^ key ^ " " ^ value) sock
 
 fun ping sock = send_command "PING" sock
 
 fun flushall sock = send_command "FLUSHALL" sock
 
-fun incr key sock = send_command ("INCR " ^ key) sock
+fun incr sock key = send_command ("INCR " ^ key) sock
 
-fun dbsize sock= 
+fun dbsize sock = 
     let
 	val response_string = send_command "DBSIZE" sock
 	val response_as_int = parse_redis_int response_string
@@ -57,7 +57,7 @@ fun dbsize sock=
 	    0
     end
 
-fun exists key sock = 
+fun exists sock key = 
     let
 	val response_string = send_command ("EXISTS " ^ key) sock
     in

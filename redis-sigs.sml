@@ -2,11 +2,11 @@ signature REDIS =
 sig
     exception RedisError of string
     val connect_db : string * int -> (INetSock.inet, (Socket.active Socket.stream)) Socket.sock
-    val get : string -> (INetSock.inet, (Socket.active Socket.stream)) Socket.sock -> string
-    val set : string -> string -> (INetSock.inet, (Socket.active Socket.stream)) Socket.sock -> string
+    val get : (INetSock.inet, (Socket.active Socket.stream)) Socket.sock -> string -> string
+    val set : (INetSock.inet, (Socket.active Socket.stream)) Socket.sock -> string -> string -> string
     val ping : (INetSock.inet, (Socket.active Socket.stream)) Socket.sock -> string
     val flushall : (INetSock.inet, (Socket.active Socket.stream)) Socket.sock -> string
-    val incr : string -> (INetSock.inet, (Socket.active Socket.stream)) Socket.sock -> string
+    val incr : (INetSock.inet, (Socket.active Socket.stream)) Socket.sock -> string -> string
     val dbsize : (INetSock.inet, (Socket.active Socket.stream)) Socket.sock-> int
-    val exists : string -> (INetSock.inet, (Socket.active Socket.stream)) Socket.sock -> bool
+    val exists : (INetSock.inet, (Socket.active Socket.stream)) Socket.sock -> string -> bool
 end
