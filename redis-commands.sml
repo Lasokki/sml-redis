@@ -1,7 +1,6 @@
 structure Redis :> REDIS =
 struct
 
-exception RedisError of string
 open RedisUtils
 
 fun connect_db (host, port) =
