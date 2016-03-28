@@ -3,7 +3,7 @@ struct
 
 exception RedisError of string
 
-fun send_command command sock =
+fun transfer_through_socket command sock =
     let
 	val _ = Socket.sendVec(sock, VectorSlice.full(Byte.stringToBytes (command ^ "\n")))
 	val raw_response = Socket.recvVec(sock, 1000)
@@ -13,6 +13,38 @@ fun send_command command sock =
 	    raise RedisError response_string
 	else
 	    response_string
+    end
+
+fun convert_string_to_bulk_string s =
+    let
+	val string_start = "$"
+	val crlf = "\r\n"
+	val string_length = Int.toString (String.size s)
+	val bulk_string = string_start ^ string_length ^ crlf ^ s ^ crlf
+    in
+	bulk_string
+    end
+
+fun convert_to_resp_array xs =
+    let
+	val array_start = "*"
+	val crlf = "\r\n"
+
+	val list_length = Int.toString (length xs)
+	val converted_commands = map convert_string_to_bulk_string xs
+	val commands_as_bulk = foldr (op ^) "" converted_commands
+					
+	val command_array = array_start ^ list_length ^ crlf ^ commands_as_bulk ^ crlf
+    in
+	command_array
+    end
+	
+
+fun send_command command sock =
+    let
+	val command_as_resp_array = convert_to_resp_array command
+    in
+	transfer_through_socket command_as_resp_array sock
     end
 
 fun remove_prefix_and_end_crlf s = substring (s, 1, size s - 2)
