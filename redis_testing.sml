@@ -11,5 +11,8 @@ val _ = print ("     new dbsize: " ^ Int.toString (Redis.dbsize connection) ^ "\
 val foo = Redis.get connection "foo"
 val _ = print ("        get foo: " ^ (if isSome foo then valOf foo else "NIL") ^ "\n")
 val _ = print ("           ping: " ^ Redis.ping connection ^ "\n")
+val bar = RedisPipeline.Ping
+val _ = print (" pipelined ping: " ^ RedisPipeline.pipeline connection [bar, bar, bar, bar] ^ "\n")
+
 val _ = Socket.close connection
 
