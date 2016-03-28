@@ -11,17 +11,11 @@ datatype command =
 	 Exists of string
 
 fun expand c = 
-    let
-	val crlf = "\r\n"
-	val simple_start = "+"
-	val bulk_start = "$"
-    in
-	case c of 
-	    Get (key) => RedisUtils.convert_to_resp_array ["Get", key]
-	  | Set (key, value) => RedisUtils.convert_to_resp_array ["Set", key, value]
-	  | Ping => RedisUtils.convert_to_resp_array ["Ping"]
-	  | _ => "FUU"
-    end
+    case c of 
+	Get (key) => RedisUtils.convert_to_resp_array ["Get", key]
+      | Set (key, value) => RedisUtils.convert_to_resp_array ["Set", key, value]
+      | Ping => RedisUtils.convert_to_resp_array ["Ping"]
+      | _ => "FUU"
 
 fun pipeline conn xs = RedisUtils.transfer_through_socket (foldr (op ^) "" (map expand xs)) conn
 
