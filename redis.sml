@@ -1,6 +1,8 @@
 structure Redis : REDIS =
 struct
 
+exception RedisError of string
+
 datatype command = 
 	 Get of string |
 	 Set of string * string |
@@ -27,6 +29,7 @@ fun expand c =
       | Ping => RedisUtils.convert_to_resp_array ["Ping"]
       | _ => "FUU"
 
-fun pipeline conn xs = RedisUtils.transfer_through_socket (foldr (op ^) "" (map expand xs)) conn
+
+fun pipeline conn xs = RedisUtils.send_command (foldr (op ^) "" (map expand xs)) conn
 
 end

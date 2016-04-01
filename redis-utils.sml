@@ -9,10 +9,7 @@ fun transfer_through_socket command sock =
 	val raw_response = Socket.recvVec(sock, 1000)
 	val response_string = Byte.bytesToString raw_response
     in
-	if String.isPrefix "-" response_string then
-	    raise RedisError response_string
-	else
-	    response_string
+	response_string
     end
 
 fun convert_string_to_bulk_string s =
@@ -37,14 +34,6 @@ fun convert_to_resp_array xs =
 	val command_array = array_start ^ list_length ^ crlf ^ commands_as_bulk ^ crlf
     in
 	command_array
-    end
-	
-
-fun send_command command sock =
-    let
-	val command_as_resp_array = convert_to_resp_array command
-    in
-	transfer_through_socket command_as_resp_array sock
     end
 
 fun remove_prefix_and_end_crlf s = substring (s, 1, size s - 2)
@@ -76,12 +65,16 @@ fun parse_redis_bulk_string s =
 	    NONE
     end
 
-fun get_simple_string_response sock command = 
-    let 
-	val response_string = send_command command sock
-	val simple_string_as_string = parse_simple_string response_string
+fun send_command command sock =
+    let
+	val response_string = transfer_through_socket command sock
+	val prefix = valOf(Substring.first (Substring.full response_string))
     in
-	simple_string_as_string
+	case prefix of
+	    #"-" => raise RedisError response_string
+	  | #"+" => parse_simple_string response_string
+	  | #"$" => valOf(parse_redis_bulk_string response_string) 
+	  | _ => "HAH" ^ response_string	    
     end
 
 end
