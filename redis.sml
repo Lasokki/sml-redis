@@ -1,4 +1,4 @@
-structure RedisPipeline : REDISPIPELINE =
+structure Redis : REDIS =
 struct
 
 datatype command = 
@@ -9,6 +9,16 @@ datatype command =
 	 Incr of string |
 	 DBSize |
 	 Exists of string
+
+fun connect_db (host, port) =
+    let
+	val localhost = valOf(NetHostDB.fromString host)
+	val addr = INetSock.toAddr(localhost, port)
+	val sock = INetSock.TCP.socket()
+	val _ = Socket.connect(sock, addr)
+    in
+	sock
+    end
 
 fun expand c = 
     case c of 
